@@ -1,0 +1,4 @@
+{"reply": "Which appointment: Dermatology on 14 Nov or Physiotherapy on 20 Nov?",
+ "options": ["derm-14nov", "physio-20nov"],
+ "action": null,
+ "unsupported_claims": []}

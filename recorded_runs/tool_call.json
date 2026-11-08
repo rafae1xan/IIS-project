@@ -1,0 +1,2 @@
+{"t": "2026-11-06T14:22", "tool": "book_slot", "args": {"date": "2026-11-14", "minutes": 90},
+ "confirmed_by": "user", "result": {"status": "ok", "id": "slot_1", "total_slots": 1}}

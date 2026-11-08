@@ -1,0 +1,4 @@
+{"reply": "Dr Achebe has no clinic next week. The next one is on the 28th. Shall I look at that, or find you another dermatologist sooner?",
+ "options": ["28 Nov", "another dermatologist"],
+ "action": null,
+ "unsupported_claims": ["clinic availability beyond next week"]}

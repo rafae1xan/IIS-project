@@ -1,0 +1,4 @@
+{"reply": "I can move your dermatology appointment on 14 Nov at 10:20. Thursday 09:40 or Friday 14:10?",
+ "options": ["Thu 09:40", "Fri 14:10"],
+ "action": {"clinic": "Dermatology", "date": "14 Nov", "time": "10:20"},
+ "unsupported_claims": []}

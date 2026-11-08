@@ -1,0 +1,56 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One-Glance Control</title>
+<style>
+ :root{--ink:#17202a;--muted:#61707d;--line:#d8e0e6;--blue:#0b4f71;--mint:#dff1ea;--amber:#fff3d6;--red:#fff0ee}
+ *{box-sizing:border-box} body{font:15px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink);margin:0;background:#f7f9fa}
+ .shell{max-width:1180px;margin:0 auto;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);background:#fff;box-shadow:0 0 28px #1d35400f}
+ main{padding:34px 38px;border-right:1px solid var(--line)} aside{padding:28px;background:#f3f7f8}
+ h1{font-size:29px;letter-spacing:-.03em;margin:0 0 5px;color:#000} h2{font-size:17px;margin:0 0 12px;color:#000} h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 8px}
+ .sub{color:var(--muted);margin:0 0 22px;max-width:65ch}.turn{margin:10px 0;padding:12px 15px;border-radius:14px;background:#eef2f4;max-width:88%;white-space:pre-wrap}.me{background:var(--blue);color:#fff;margin-left:auto}
+ .quick{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 14px}.quick button,.options button{border:1px solid #8cb7a8;background:#fff;color:#155d48;border-radius:18px;padding:8px 12px;cursor:pointer;font:inherit}.quick button:hover,.options button:hover{background:var(--mint)}
+ input{width:100%;padding:12px 14px;font:inherit;border:1px solid #aebbc4;border-radius:9px;background:#fff}.input-note{font-size:12px;color:var(--muted);margin:8px 0 0}
+ #card{min-height:130px}.card{padding:14px;border:1px solid #c8ddd5;border-radius:11px;background:var(--mint);margin:0 0 12px}.action-card{background:#e8f0f7;border-color:#b9cedd}.evidence{background:#fff;border-color:var(--line)}.evidence p{font-size:13px;margin:8px 0 0}.warning{padding:12px;border-left:4px solid #b56a00;background:var(--amber);color:#603b00}.refusal{padding:12px;border-left:4px solid #b44837;background:var(--red);color:#6a2117}.note{color:var(--muted);font-size:13px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}.kv{display:grid;grid-template-columns:115px 1fr;gap:5px 10px;font-size:13px;margin-top:9px}.kv b{font-weight:600}.options{margin:10px 0}.control-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12px;color:var(--muted)}
+ @media(max-width:760px){.shell{display:block}.shell main{border-right:0;border-bottom:1px solid var(--line);padding:24px 18px}aside{padding:20px 18px}.kv{grid-template-columns:100px 1fr}}
+</style>
+<div class="shell">
+ <main>
+  <h1>One-Glance Control</h1>
+  <p class="sub">An action-oriented assistant that makes its evidence, interpretation and proposed consequence visible before anything changes.</p>
+  <div class="quick" aria-label="Prototype checks">
+   <button onclick="send('when is coursework 1 due')">Ask with evidence</button>
+   <button onclick="send('what is the late-submission penalty')">Test stale source</button>
+   <button onclick="send('book a revision slot')">Propose an action</button>
+   <button onclick="send('__poster__')">Test image answer</button>
+   <button onclick="send('__noticeboard__')">Test image refusal</button>
+  </div>
+  <div id="transcript" aria-live="polite"></div>
+  <p><input id="msg" placeholder="Ask a question or type ‘book a revision slot’" autofocus></p>
+  <p class="input-note">The prototype uses a local mock, local corpus and a local schedule file. It does not contact an external calendar.</p>
+ </main>
+ <aside>
+  <h2>Control panel</h2>
+  <p class="note">The panel separates what the system knows from what it proposes to do.</p>
+  <div id="card"><p class="note">Nothing yet. Try “Propose an action”.</p></div>
+ </aside>
+</div>
+<script>
+const t=document.getElementById('transcript'), card=document.getElementById('card');
+function say(text,me){const d=document.createElement('div');d.className='turn'+(me?' me':'');d.textContent=text;t.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function addText(parent,text,cls=''){const p=document.createElement('p');p.textContent=text;p.className=cls;parent.appendChild(p);return p;}
+function addKV(parent,items){const d=document.createElement('div');d.className='kv';items.forEach(([k,v])=>{const b=document.createElement('b');b.textContent=k;d.appendChild(b);const s=document.createElement('span');s.textContent=v;d.appendChild(s)});parent.appendChild(d)}
+function render(data){
+ card.innerHTML='';
+ if(data.action){const c=document.createElement('div');c.className='card action-card';addText(c,'Proposed action','label');addKV(c,[['Object',data.action.object],['Change',data.action.minutes+' minutes on '+data.action.date],['Impact',data.action.impact],['Reversible',data.action.reversible]]);card.appendChild(c)}
+ if(data.tool_confirmation){const c=document.createElement('div');c.className='card action-card';addText(c,'Before execution','label');addText(c,data.tool_confirmation);addText(c,'The schedule file will not be changed until you choose.','note');const row=document.createElement('div');row.className='options';const yes=document.createElement('button');yes.textContent='Confirm';yes.onclick=()=>send('__confirm_tool__');const no=document.createElement('button');no.textContent='Cancel';no.onclick=()=>send('__cancel_tool__');row.append(yes,no);c.appendChild(row);card.appendChild(c)}
+ if(data.tool_result){const c=document.createElement('div');c.className='card';addText(c,'Tool result','label');addText(c,JSON.stringify(data.tool_result));card.appendChild(c)}
+ if(data.evidence&&data.evidence.length){const e=document.createElement('div');e.className='card evidence';addText(e,'Evidence used','label');data.evidence.forEach(h=>{const p=document.createElement('p');p.textContent=(h.superseded?'[SUPERSEDED] ':'')+h.source+' · '+h.section+' · updated '+h.date+' · score '+h.score+'\n“'+h.text+'”';e.appendChild(p)});card.appendChild(e)}
+ if(data.stale_warning)addText(card,data.stale_warning,'warning');
+ if(data.image_result){const r=data.image_result;const c=document.createElement('div');c.className='card '+(r.refused?'refusal':'');addText(c,'Image check','label');addText(c,r.refused?'Refused: '+r.reason:r.claim+' · confidence '+r.confidence+' · '+r.evidence);card.appendChild(c)}
+ if(data.options&&data.options.length){const o=document.createElement('div');o.className='options';addText(o,'Choose an option','label');data.options.forEach(x=>{const b=document.createElement('button');b.textContent=x;b.onclick=()=>send(x);o.appendChild(b)});card.appendChild(o)}
+ if(data.control){const c=document.createElement('div');c.className='control-strip';const p=document.createElement('span');p.className='pill';p.textContent='Mode: '+data.control.mode;c.appendChild(p);if(data.control.reason){const q=document.createElement('span');q.className='pill';q.textContent=data.control.reason;c.appendChild(q)}card.appendChild(c)}
+ const n=document.createElement('p');n.className='note';n.textContent=(data.unsupported_claims||[]).length?'Not checked: '+data.unsupported_claims.join(', '):'No unsupported claim was used for this result.';card.appendChild(n);
+}
+async function send(text){if(!text.startsWith('__'))say(text,true);const r=await fetch('/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});const data=await r.json();if(data.reply)say(data.reply);render(data)}
+document.getElementById('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){const v=e.target.value;e.target.value='';send(v)}});
+</script>
