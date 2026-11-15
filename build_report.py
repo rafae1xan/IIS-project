@@ -9,7 +9,7 @@ from docx.oxml import OxmlElement
 ROOT = Path(__file__).parent
 OUT = Path(r"C:\Users\徐健\Documents\Codex\2026-11-06\cha\outputs")
 OUT.mkdir(parents=True, exist_ok=True)
-OUTPUT = OUT / "A2_One_Glance_Control_Project_Report_Final4.docx"
+OUTPUT = OUT / "A2_One_Glance_Control_Project_Report_Final8.docx"
 
 
 def set_font(run, name="Aptos", size=10.5, bold=None, italic=None, color="000000"):
@@ -147,6 +147,16 @@ def main():
         add_caption(doc, "Figure 2. Normal interaction: inspect, decide and receive the tool result.")
         add_figure(doc, ROOT / "assets" / "storyboard_failure.png")
         add_caption(doc, "Figure 3. Failure and recovery: stale evidence is exposed and the decision returns to the person.")
+        add_figure(doc, ROOT / "assets" / "ui_proposal.png")
+        add_caption(doc, "Figure 4. Interface capture: an action proposal is visible before execution.")
+        add_figure(doc, ROOT / "assets" / "ui_confirmed.png")
+        add_caption(doc, "Figure 5. Interface capture: the confirmed local tool result and executed state.")
+        add_figure(doc, ROOT / "assets" / "ui_stale.png")
+        add_caption(doc, "Figure 6. Interface capture: stale evidence, provenance and superseded-source warning.")
+        add_figure(doc, ROOT / "assets" / "run_log.png")
+        add_caption(doc, "Figure 7. Recorded self-test and interaction log.")
+        add_figure(doc, ROOT / "assets" / "code_snippet.png")
+        add_caption(doc, "Figure 8. Code excerpt showing validation, pending state and confirmation-gated execution.")
 
     footer = sec.footer.paragraphs[0]
     footer.alignment = WD_ALIGN_PARAGRAPH.CENTER

@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One-Glance Control evidence capture</title>
+<style>
+:root{--ink:#17202a;--muted:#61707d;--line:#d8e0e6;--blue:#0b4f71;--mint:#dff1ea;--amber:#fff3d6;--red:#fff0ee}
+*{box-sizing:border-box}body{font:15px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);margin:0;background:#f7f9fa}
+.shell{max-width:1180px;margin:0 auto;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);background:#fff;box-shadow:0 0 28px #1d35400f}
+main{padding:34px 38px;border-right:1px solid var(--line)}aside{padding:28px;background:#f3f7f8}
+h1{font-size:29px;letter-spacing:-.03em;margin:0 0 5px;color:#000}h2{font-size:17px;margin:0 0 12px;color:#000}.sub{color:var(--muted);margin:0 0 22px;max-width:65ch}
+.quick{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 14px}.quick button,.options button{border:1px solid #8cb7a8;background:#fff;color:#155d48;border-radius:18px;padding:8px 12px;font:inherit}.turn{margin:10px 0;padding:12px 15px;border-radius:14px;background:#eef2f4;max-width:88%;white-space:pre-wrap}.me{background:var(--blue);color:#fff;margin-left:auto}
+input{width:100%;padding:12px 14px;font:inherit;border:1px solid #aebbc4;border-radius:9px;background:#fff}.input-note,.note{color:var(--muted);font-size:13px}.input-note{font-size:12px;margin:8px 0 0}
+.card{padding:14px;border:1px solid #c8ddd5;border-radius:11px;background:var(--mint);margin:0 0 12px}.action-card{background:#e8f0f7;border-color:#b9cedd}.evidence{background:#fff;border-color:var(--line)}.evidence p{font-size:13px;margin:8px 0 0}.warning{padding:12px;border-left:4px solid #b56a00;background:var(--amber);color:#603b00}.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}.kv{display:grid;grid-template-columns:115px 1fr;gap:5px 10px;font-size:13px;margin-top:9px}.kv b{font-weight:600}.result{font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0 0}.options{margin:10px 0}.control-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12px;color:var(--muted)}
+</style>
+<div class="shell"><main>
+<h1>One-Glance Control</h1>
+<p class="sub">An action-oriented assistant that makes its evidence, interpretation and proposed consequence visible before anything changes.</p>
+<div class="quick"><button>Ask with evidence</button><button>Test stale source</button><button>Propose an action</button><button>Test image answer</button><button>Test image refusal</button></div>
+<div id="transcript"></div><p><input value="book a revision slot" readonly></p>
+<p class="input-note">The prototype uses a local mock, local corpus and a local schedule file. It does not contact an external calendar.</p>
+</main><aside><h2>Control panel</h2><p class="note">The panel separates what the system knows from what it proposes to do.</p><div id="card"></div></aside></div>
+<script>
+const t=document.getElementById('transcript'),card=document.getElementById('card');
+const pill=(txt)=>`<span class="pill">${txt}</span>`;
+const header=`<div class="turn me">book a revision slot</div>`;
+const assistant=`<div class="turn">I prepared an action proposal. Nothing has been changed yet.</div>`;
+const proposal=`<div class="card action-card"><div class="label">Proposed action</div><div class="kv"><b>Object</b><span>your local revision schedule</span><b>Change</b><span>90 minutes on 14 Nov 2026</span><b>Impact</b><span>Writes one entry to schedule.json</span><b>Reversible</b><span>Yes - remove the local slot later</span></div></div><div class="card action-card"><div class="label">Before execution</div><p>The schedule file will not be changed until you choose.</p><p class="note">The model proposal has passed shape, range and scope validation.</p><div class="options"><button>Confirm</button><button>Cancel</button></div></div><div class="control-strip">${pill('Mode: awaiting_confirmation')}${pill('Selected object: local revision schedule')}${pill('No external calendar')}</div><p class="note">No unsupported claim was used for this result.</p>`;
+const confirmed=`<div class="card"><div class="label">Tool result</div><pre class="result">{
+  "ok": true,
+  "written": "schedule.json",
+  "minutes": 90,
+  "confirmed_by": "user"
+}</pre></div><div class="card action-card"><div class="label">Executed action</div><div class="kv"><b>Object</b><span>your local revision schedule</span><b>Change</b><span>90 minutes on 14 Nov 2026</span><b>Impact</b><span>Local file updated</span></div></div><div class="control-strip">${pill('Mode: executed')}${pill('Confirmed: user')}${pill('Reversible: yes')}</div><p class="note">No unsupported claim was used for this result.</p>`;
+const staleUser=`<div class="turn me">what is the late-submission penalty</div>`;
+const staleAssistant=`<div class="turn">The late-submission penalty is shown in the current passage below.</div>`;
+const stale=`<div class="card evidence"><div class="label">Evidence used</div><p>[SUPERSEDED] handbook.md · Late submission · updated 2024-01-12 · score 0.67<br>“The older handbook passage...”</p><p>handbook_late.md · Late submission · updated 2026-09-01 · score 0.62<br>“The current late-submission rule...”</p></div><div class="warning">The top retrieval result is superseded. This answer uses the newer passage shown below.</div><div class="control-strip">${pill('Mode: grounded')}${pill('Provenance shown')}</div><p class="note">No unsupported claim was used for this result.</p>`;
+const state=new URLSearchParams(location.search).get('state')||'proposal';
+if(state==='confirmed'){t.innerHTML=header+assistant.replace('action proposal','confirmed action');card.innerHTML=confirmed}
+else if(state==='stale'){t.innerHTML=staleUser+staleAssistant;document.querySelector('input').value='what is the late-submission penalty';card.innerHTML=stale}
+else{t.innerHTML=header+assistant;card.innerHTML=proposal}
+</script>

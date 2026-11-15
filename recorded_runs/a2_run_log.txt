@@ -1,0 +1,21 @@
+One-Glance Control A2 evidence run
+Date: 2026-11-08
+
+$ python retrieve.py --selftest
+ok: 6 documents, 14 passages
+
+$ python tools.py --selftest
+ok: valid call accepted, 900-minute call refused (minutes must be between 15 and 180)
+
+$ python vlm.py --selftest
+ok: 2 sample images
+
+Interaction checks
+[grounded] coursework 1 due -> answer + 3 provenance-linked passages
+[stale] late-submission penalty -> superseded source warning + newer passage used
+[proposal] book a revision slot -> awaiting_confirmation; no file change
+[cancel] __cancel_tool__ -> cancelled; no action was taken
+[refusal] __noticeboard__ -> image refused; no deadline visible and named mark not read out
+
+Key action result
+{"ok": true, "written": "schedule.json", "minutes": 90, "confirmed_by": "user"}

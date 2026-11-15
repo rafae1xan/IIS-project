@@ -1,7 +1,7 @@
 # One Glance Control for Action Oriented LLM Systems
 
 **A2 Project Report**  
-**Abstract: 173 words | Main report: 950 words | Total counted text: 1,123 words**
+**Abstract: 165 words | Main report: 1,059 words | Total counted text: 1,224 words**
 
 ## Abstract
 
@@ -9,7 +9,7 @@ Action-oriented LLM systems can interpret a natural-language request, retrieve i
 
 ## Project scope and developed work
 
-The project follows the opportunity identified in Assignment 1: compare pre-action confirmation mechanisms that connect evidence, model decisions and execution. The developed scope is a single offline assistant route. A person can ask a question, request a revision slot, inspect a proposed local schedule change, confirm or cancel it, and see the returned result. The prototype uses the supplied Lab 4 corpus and mock model so that the interaction is reproducible without an API key. Retrieval, provenance display, structured action data, validation, confirmation, refusal and logging are implemented. The model response, local corpus and local schedule file are simulations of a future connected system; no external calendar or personal data is accessed.
+The project follows the opportunity identified in Assignment 1: compare pre-action confirmation mechanisms that connect evidence, model decisions and execution. Feedback narrowed the problem to a testable evidence-to-action boundary. The developed scope is a single offline assistant route. A person can ask a question, request a revision slot, inspect a proposed local schedule change, confirm or cancel it, and see the returned result. The prototype uses the supplied Lab 4 corpus and mock model so that the interaction is reproducible without an API key. Retrieval, provenance display, structured action data, validation, confirmation, refusal and logging are implemented. The model response, local corpus and local schedule file are simulations of a future connected system; no external calendar or personal data is accessed.
 
 ## Design rationale and project explanation
 
@@ -27,11 +27,37 @@ The main trade-off is compactness versus completeness. One glance cannot show ev
 
 ## Developed interaction and evidence
 
-Figure 1 shows the system boundary and control flow. Figures 2 and 3 show the normal path and a stale-source recovery path. The runnable repository demonstrates the same states: an evidence answer, a superseded-source warning, a pending confirmation, a cancelled proposal, a confirmed local tool result, an invalid call refusal and an unanswerable request. The implementation is intentionally modest so that a reader can inspect the complete path rather than infer behaviour from a list of planned features.
+Figure 1 shows the system boundary and control flow. Figures 2 and 3 show the normal path and stale-source recovery. The repository demonstrates grounded answers, pending confirmation, cancellation, confirmed execution, invalid-call refusal and unanswerable-image refusal.
+
+## Storyboards and illustrated interaction
+
+The storyboard and interface captures document three concrete uses.
+
+1. Proposal: the person types “book a revision slot”; the system shows object, date, duration, impact and reversibility with Confirm/Cancel. Nothing changes yet (Figures 2 and 4).
+
+2. Execution or recovery: Confirm writes one local entry and reports JSON; Cancel returns “No action was taken” (Figure 5).
+
+3. Evidence repair: the late-submission query exposes an older passage, a newer date and a superseded warning instead of silently replacing evidence (Figures 3 and 6).
+
+## Runtime and implementation evidence
+
+Figures 4-6 show the same HTML layout populated with real `app.turn` response states: awaiting confirmation, executed result and stale-source repair. Figure 7 records the self-tests: 6 documents/14 passages, valid-call acceptance, 900-minute refusal before execution and 2 checked sample images. It also records confirmation, cancellation and image refusal.
+
+Figure 8 shows `app.py`: validation stores a proposal in `PENDING_CALL`, while `tools.run` appears only in `confirm_tool` after confirmation.
 
 ## Development decisions and current limits
 
-The project developed from the Assignment 1 literature map into the Lab 3 system-path exercise and the Lab 4 retrieval/tool integration. The supplied mock route was retained because it makes the project reproducible and keeps the system boundary visible. The interface and response shape were then changed to make evidence, action parameters and control state first-class fields. The next development stage would replace the local corpus with a permissioned connector and run a small comparison of generic confirmation versus the structured control panel, measuring error detection, completion time and unnecessary cancellation. Until then, the prototype supports a design argument and walkthrough, not a causal evaluation.
+The work changed in stages. Assignment 1 feedback narrowed the problem from general LLM trust to a testable evidence-to-action boundary. Lab 3 made evidence, object, parameters, impact, uncertainty and reversibility visible in one panel. Lab 4 supplied the offline route; tests then prompted stale-source repair, refusal and confirmation as implemented states. Final checks covered grounded, stale, valid, invalid, ambiguous, cancelled, confirmed and image-refusal cases. This applies Week 1 human-centred framing, Week 2 feedback and agency, Week 3 model-tool separation and Week 4 provenance (University of Birmingham, 2026). A future study would compare this panel with generic confirmation; this prototype is not causal evidence.
+
+## Repository and development evidence
+
+Public GitHub repository: https://github.com/rafae1xan/IIS-project
+
+README: https://github.com/rafae1xan/IIS-project/blob/main/README.md
+
+Submitted release tag: v0.1 (https://github.com/rafae1xan/IIS-project/releases/tag/v0.1)
+
+For the development record, setup instructions and test evidence, see the Development record section of the README.
 
 ## References
 
@@ -39,24 +65,26 @@ Clark, H. H., & Brennan, S. E. (1991). Grounding in communication. In *Perspecti
 
 Horvitz, E. (1999). Principles of mixed-initiative user interfaces. *CHI 1999*, 159–166.
 
-Ji, Z., et al. (2023). Survey of hallucination in natural language generation. *ACM Computing Surveys*, 55(12), 1–38.
-
 Kulesza, T., et al. (2013). Too much, too little, or just right? Ways explanations impact end users’ mental models. *IEEE VL/HCC*, 3–10.
-
-Lewis, P., et al. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. *NeurIPS 33*.
-
-Luger, E., & Sellen, A. (2016). “Like having a really bad PA”: The gulf between user expectation and experience of conversational agents. *CHI 2016*, 5286–5297.
-
-Shi, F., et al. (2023). Large language models can be easily distracted by irrelevant context. *ICML 2023*.
-
-Shneiderman, B. (2022). *Human-centered AI*. Oxford University Press.
 
 University of Birmingham. (2026). *LH/LM Intelligent Interactive Systems: Weeks 1–4 lecture slides and lab materials*. Canvas course materials.
 
+Reused material: the offline corpus, mock route and validation helpers from the supplied Lab 4 materials were retained and adapted. The report prose, figure labels and additional evidence captures are original project work.
+
 ## Figures
 
-**Figure 1.** System boundary, components and control flow. Green components are implemented locally; amber components are simulated.
+**Figure 1.** System boundary, components and control flow. Green components are implemented locally; amber components are simulated; purple items are planned.
 
 **Figure 2.** Normal interaction: inspect, decide and receive the tool result.
 
 **Figure 3.** Failure and recovery: stale evidence is exposed and the decision returns to the person.
+
+**Figure 4.** Interface capture: an action proposal is visible before execution.
+
+**Figure 5.** Interface capture: the confirmed local tool result and executed state.
+
+**Figure 6.** Interface capture: stale evidence, provenance and superseded-source warning.
+
+**Figure 7.** Recorded self-test and interaction log.
+
+**Figure 8.** Code excerpt showing validation, pending state and confirmation-gated execution.
